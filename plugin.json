@@ -1,0 +1,26 @@
+{
+    "name": "workflow-plugin-marketplace",
+    "version": "0.1.0",
+    "description": "Marketplace steps for searching, installing, and managing workflow plugins",
+    "author": "GoCodeAlone",
+    "license": "MIT",
+    "type": "external",
+    "tier": "community",
+    "minEngineVersion": "0.5.0",
+    "keywords": ["marketplace", "plugins", "registry", "install"],
+    "homepage": "https://github.com/GoCodeAlone/workflow-plugin-marketplace",
+    "repository": "https://github.com/GoCodeAlone/workflow-plugin-marketplace",
+    "capabilities": {
+        "configProvider": false,
+        "moduleTypes": [],
+        "stepTypes": [
+            "step.marketplace_search",
+            "step.marketplace_detail",
+            "step.marketplace_install",
+            "step.marketplace_installed",
+            "step.marketplace_uninstall",
+            "step.marketplace_update"
+        ],
+        "triggerTypes": []
+    }
+}
