@@ -13,6 +13,12 @@ import (
 	sdk "github.com/GoCodeAlone/workflow/plugin/external/sdk"
 )
 
+// Version is set at build time via -ldflags
+// "-X github.com/GoCodeAlone/workflow-plugin-marketplace/internal.Version=X.Y.Z".
+// Default is a bare semver so plugin loaders that validate semver accept
+// unreleased dev builds; goreleaser overrides with the real release tag.
+var Version = "0.0.0"
+
 // marketplacePlugin implements sdk.PluginProvider.
 type marketplacePlugin struct{}
 
@@ -25,7 +31,7 @@ func NewMarketplacePlugin() sdk.PluginProvider {
 func (p *marketplacePlugin) Manifest() sdk.PluginManifest {
 	return sdk.PluginManifest{
 		Name:        "workflow-plugin-marketplace",
-		Version:     "0.1.0",
+		Version:     Version,
 		Author:      "GoCodeAlone",
 		Description: "Marketplace steps for searching, installing, and managing workflow plugins",
 	}
