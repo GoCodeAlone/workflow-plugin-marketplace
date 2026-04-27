@@ -10,7 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoCodeAlone/workflow-plugin-marketplace/internal/contracts"
+	pb "github.com/GoCodeAlone/workflow/plugin/external/proto"
 	sdk "github.com/GoCodeAlone/workflow/plugin/external/sdk"
+	"google.golang.org/protobuf/reflect/protodesc"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 // Version is set at build time via -ldflags
@@ -19,7 +24,9 @@ import (
 // unreleased dev builds; goreleaser overrides with the real release tag.
 var Version = "0.0.0"
 
-// marketplacePlugin implements sdk.PluginProvider.
+const marketplaceRegistryDir = "data/plugins"
+
+// marketplacePlugin implements sdk.PluginProvider, sdk.TypedStepProvider, and sdk.ContractProvider.
 type marketplacePlugin struct{}
 
 // NewMarketplacePlugin returns a new marketplacePlugin instance.
@@ -49,19 +56,21 @@ func (p *marketplacePlugin) CreateModule(typeName, name string, _ map[string]any
 
 // StepTypes returns the step type names this plugin provides.
 func (p *marketplacePlugin) StepTypes() []string {
-	return []string{
-		"step.marketplace_search",
-		"step.marketplace_detail",
-		"step.marketplace_install",
-		"step.marketplace_installed",
-		"step.marketplace_uninstall",
-		"step.marketplace_update",
-	}
+	return append([]string(nil), marketplaceStepTypes...)
+}
+
+var marketplaceStepTypes = []string{
+	"step.marketplace_search",
+	"step.marketplace_detail",
+	"step.marketplace_install",
+	"step.marketplace_installed",
+	"step.marketplace_uninstall",
+	"step.marketplace_update",
 }
 
 // CreateStep creates a step instance of the given type.
 func (p *marketplacePlugin) CreateStep(typeName, name string, config map[string]any) (sdk.StepInstance, error) {
-	registry := newLocalRegistry("data/plugins")
+	registry := newLocalRegistry(marketplaceRegistryDir)
 	switch typeName {
 	case "step.marketplace_search":
 		return &marketplaceSearchStep{name: name, config: config, registry: registry}, nil
@@ -77,6 +86,69 @@ func (p *marketplacePlugin) CreateStep(typeName, name string, config map[string]
 		return &marketplaceUpdateStep{name: name, config: config, registry: registry}, nil
 	default:
 		return nil, fmt.Errorf("marketplace plugin: unknown step type %q", typeName)
+	}
+}
+
+// TypedStepTypes returns the typed step type names this plugin provides.
+func (p *marketplacePlugin) TypedStepTypes() []string {
+	return append([]string(nil), marketplaceStepTypes...)
+}
+
+// CreateTypedStep creates a typed step instance of the given type.
+func (p *marketplacePlugin) CreateTypedStep(typeName, name string, config *anypb.Any) (sdk.StepInstance, error) {
+	registry := newLocalRegistry(marketplaceRegistryDir)
+	switch typeName {
+	case "step.marketplace_search":
+		factory := sdk.NewTypedStepFactory(typeName, &contracts.MarketplaceSearchConfig{}, &contracts.MarketplaceSearchInput{}, typedMarketplaceSearch(registry))
+		return factory.CreateTypedStep(typeName, name, config)
+	case "step.marketplace_detail":
+		factory := sdk.NewTypedStepFactory(typeName, &contracts.MarketplaceDetailConfig{}, &contracts.MarketplaceDetailInput{}, typedMarketplaceDetail(registry))
+		return factory.CreateTypedStep(typeName, name, config)
+	case "step.marketplace_install":
+		factory := sdk.NewTypedStepFactory(typeName, &contracts.MarketplaceInstallConfig{}, &contracts.MarketplaceInstallInput{}, typedMarketplaceInstall(registry))
+		return factory.CreateTypedStep(typeName, name, config)
+	case "step.marketplace_installed":
+		factory := sdk.NewTypedStepFactory(typeName, &contracts.MarketplaceInstalledConfig{}, &contracts.MarketplaceInstalledInput{}, typedMarketplaceInstalled(registry))
+		return factory.CreateTypedStep(typeName, name, config)
+	case "step.marketplace_uninstall":
+		factory := sdk.NewTypedStepFactory(typeName, &contracts.MarketplaceUninstallConfig{}, &contracts.MarketplaceUninstallInput{}, typedMarketplaceUninstall(registry))
+		return factory.CreateTypedStep(typeName, name, config)
+	case "step.marketplace_update":
+		factory := sdk.NewTypedStepFactory(typeName, &contracts.MarketplaceUpdateConfig{}, &contracts.MarketplaceUpdateInput{}, typedMarketplaceUpdate(registry))
+		return factory.CreateTypedStep(typeName, name, config)
+	default:
+		return nil, fmt.Errorf("marketplace plugin: unknown step type %q", typeName)
+	}
+}
+
+// ContractRegistry returns strict protobuf descriptors for plugin step boundaries.
+func (p *marketplacePlugin) ContractRegistry() *pb.ContractRegistry {
+	const pkg = "workflow.plugins.marketplace.v1."
+	return &pb.ContractRegistry{
+		FileDescriptorSet: &descriptorpb.FileDescriptorSet{
+			File: []*descriptorpb.FileDescriptorProto{
+				protodesc.ToFileDescriptorProto(contracts.File_internal_contracts_marketplace_proto),
+			},
+		},
+		Contracts: []*pb.ContractDescriptor{
+			stepContract("step.marketplace_search", pkg+"MarketplaceSearchConfig", pkg+"MarketplaceSearchInput", pkg+"MarketplaceSearchOutput"),
+			stepContract("step.marketplace_detail", pkg+"MarketplaceDetailConfig", pkg+"MarketplaceDetailInput", pkg+"MarketplaceDetailOutput"),
+			stepContract("step.marketplace_install", pkg+"MarketplaceInstallConfig", pkg+"MarketplaceInstallInput", pkg+"MarketplaceInstallOutput"),
+			stepContract("step.marketplace_installed", pkg+"MarketplaceInstalledConfig", pkg+"MarketplaceInstalledInput", pkg+"MarketplaceInstalledOutput"),
+			stepContract("step.marketplace_uninstall", pkg+"MarketplaceUninstallConfig", pkg+"MarketplaceUninstallInput", pkg+"MarketplaceUninstallOutput"),
+			stepContract("step.marketplace_update", pkg+"MarketplaceUpdateConfig", pkg+"MarketplaceUpdateInput", pkg+"MarketplaceUpdateOutput"),
+		},
+	}
+}
+
+func stepContract(stepType, configMessage, inputMessage, outputMessage string) *pb.ContractDescriptor {
+	return &pb.ContractDescriptor{
+		Kind:          pb.ContractKind_CONTRACT_KIND_STEP,
+		StepType:      stepType,
+		ConfigMessage: configMessage,
+		InputMessage:  inputMessage,
+		OutputMessage: outputMessage,
+		Mode:          pb.ContractMode_CONTRACT_MODE_STRICT_PROTO,
 	}
 }
 
@@ -116,11 +188,30 @@ func (r *localRegistry) search(query, category string, tags []string) []marketpl
 		if category != "" && r.catalog[i].Category != category {
 			continue
 		}
+		if len(tags) > 0 && !entryHasTags(r.catalog[i], tags) {
+			continue
+		}
 		entry := r.catalog[i]
 		entry.Installed = installed[entry.Name]
 		results = append(results, entry)
 	}
 	return results
+}
+
+func entryHasTags(entry marketplaceEntry, tags []string) bool {
+	if len(tags) == 0 {
+		return true
+	}
+	entryTags := make(map[string]bool, len(entry.Tags))
+	for _, tag := range entry.Tags {
+		entryTags[strings.ToLower(tag)] = true
+	}
+	for _, tag := range tags {
+		if !entryTags[strings.ToLower(tag)] {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *localRegistry) detail(name string) (*marketplaceEntry, error) {
