@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package workflow.plugins.marketplace.v1;
+
+option go_package = "github.com/GoCodeAlone/workflow-plugin-marketplace/internal/contracts";
+
+message MarketplaceSearchConfig {
+  string query = 1;
+  string category = 2;
+  repeated string tags = 3;
+}
+
+message MarketplaceSearchInput {
+  string query = 1;
+  string category = 2;
+  repeated string tags = 3;
+}
+
+message MarketplaceDetailConfig {
+  string name = 1;
+}
+
+message MarketplaceDetailInput {
+  string name = 1;
+}
+
+message MarketplaceInstallConfig {
+  string name = 1;
+}
+
+message MarketplaceInstallInput {
+  string name = 1;
+}
+
+message MarketplaceInstalledConfig {}
+
+message MarketplaceInstalledInput {}
+
+message MarketplaceUninstallConfig {
+  string name = 1;
+}
+
+message MarketplaceUninstallInput {
+  string name = 1;
+}
+
+message MarketplaceUpdateConfig {
+  string name = 1;
+}
+
+message MarketplaceUpdateInput {
+  string name = 1;
+}
+
+message MarketplacePlugin {
+  string name = 1;
+  string version = 2;
+  string description = 3;
+  string author = 4;
+  string category = 5;
+  repeated string tags = 6;
+  int32 downloads = 7;
+  double rating = 8;
+  bool installed = 9;
+  string installed_at = 10;
+}
+
+message MarketplaceSearchOutput {
+  repeated MarketplacePlugin results = 1;
+  int32 count = 2;
+  string error = 100;
+}
+
+message MarketplaceDetailOutput {
+  MarketplacePlugin plugin = 1;
+  string error = 100;
+}
+
+message MarketplaceInstallOutput {
+  bool installed = 1;
+  string name = 2;
+  string error = 100;
+}
+
+message MarketplaceInstalledOutput {
+  repeated MarketplacePlugin plugins = 1;
+  int32 count = 2;
+  string error = 100;
+}
+
+message MarketplaceUninstallOutput {
+  bool uninstalled = 1;
+  string name = 2;
+  string error = 100;
+}
+
+message MarketplaceUpdateOutput {
+  bool updated = 1;
+  string name = 2;
+  string error = 100;
+}

@@ -1,0 +1,53 @@
+{
+  "version": "v1",
+  "contracts": [
+    {
+      "kind": "step",
+      "type": "step.marketplace_search",
+      "mode": "strict",
+      "config": "workflow.plugins.marketplace.v1.MarketplaceSearchConfig",
+      "input": "workflow.plugins.marketplace.v1.MarketplaceSearchInput",
+      "output": "workflow.plugins.marketplace.v1.MarketplaceSearchOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.marketplace_detail",
+      "mode": "strict",
+      "config": "workflow.plugins.marketplace.v1.MarketplaceDetailConfig",
+      "input": "workflow.plugins.marketplace.v1.MarketplaceDetailInput",
+      "output": "workflow.plugins.marketplace.v1.MarketplaceDetailOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.marketplace_install",
+      "mode": "strict",
+      "config": "workflow.plugins.marketplace.v1.MarketplaceInstallConfig",
+      "input": "workflow.plugins.marketplace.v1.MarketplaceInstallInput",
+      "output": "workflow.plugins.marketplace.v1.MarketplaceInstallOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.marketplace_installed",
+      "mode": "strict",
+      "config": "workflow.plugins.marketplace.v1.MarketplaceInstalledConfig",
+      "input": "workflow.plugins.marketplace.v1.MarketplaceInstalledInput",
+      "output": "workflow.plugins.marketplace.v1.MarketplaceInstalledOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.marketplace_uninstall",
+      "mode": "strict",
+      "config": "workflow.plugins.marketplace.v1.MarketplaceUninstallConfig",
+      "input": "workflow.plugins.marketplace.v1.MarketplaceUninstallInput",
+      "output": "workflow.plugins.marketplace.v1.MarketplaceUninstallOutput"
+    },
+    {
+      "kind": "step",
+      "type": "step.marketplace_update",
+      "mode": "strict",
+      "config": "workflow.plugins.marketplace.v1.MarketplaceUpdateConfig",
+      "input": "workflow.plugins.marketplace.v1.MarketplaceUpdateInput",
+      "output": "workflow.plugins.marketplace.v1.MarketplaceUpdateOutput"
+    }
+  ]
+}
