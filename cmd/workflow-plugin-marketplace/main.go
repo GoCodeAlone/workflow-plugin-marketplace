@@ -9,5 +9,5 @@ import (
 )
 
 func main() {
-	sdk.Serve(internal.NewMarketplacePlugin())
+	sdk.Serve(internal.NewMarketplacePlugin(), sdk.WithBuildVersion(sdk.ResolveBuildVersion(internal.Version)))
 }
