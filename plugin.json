@@ -1,6 +1,6 @@
 {
     "name": "workflow-plugin-marketplace",
-    "version": "0.1.1",
+    "version": "0.0.0",
     "description": "Marketplace steps for searching, installing, and managing workflow plugins",
     "author": "GoCodeAlone",
     "license": "MIT",
